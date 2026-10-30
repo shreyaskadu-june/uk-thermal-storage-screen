@@ -35,12 +35,18 @@
   }
 
   // Parameters for one technology. `over` replaces single inputs for sensitivity runs.
+  // Capex range for the scale: large-tank figures above the threshold, otherwise the main range.
+  function capexRange(t, s) {
+    return (t.capexLarge && s.E > t.capexLargeAbove) ? t.capexLarge : t.capex;
+  }
+
   function paramsFor(t, s, over) {
     over = over || {};
+    var cap = capexRange(t, s);
     return {
       E: s.E, cycles: s.cycles, days: s.days, price: over.price !== undefined ? over.price : s.price,
       r: over.r !== undefined ? over.r : s.rr,
-      capex: over.capex !== undefined ? over.capex : t.capex.central,
+      capex: over.capex !== undefined ? over.capex : cap.central,
       eta: over.eta !== undefined ? over.eta : t.eta.central,
       lossDay: over.lossDay !== undefined ? over.lossDay : t.lossDay.central,
       life: over.life !== undefined ? over.life : t.life.central,
@@ -50,11 +56,12 @@
 
   // Favourable and unfavourable envelope: every factor at its end of the range together.
   function envelope(t, s) {
+    var cap = capexRange(t, s);
     var good = M.evaluate(paramsFor(t, s, {
-      capex: t.capex.low, eta: t.eta.high, lossDay: t.lossDay.low, life: t.life.high, om: t.om.low, r: D.discount.low
+      capex: cap.low, eta: t.eta.high, lossDay: t.lossDay.low, life: t.life.high, om: t.om.low, r: D.discount.low
     })).lcos;
     var bad = M.evaluate(paramsFor(t, s, {
-      capex: t.capex.high, eta: t.eta.low, lossDay: t.lossDay.high, life: t.life.low, om: t.om.high, r: D.discount.high
+      capex: cap.high, eta: t.eta.low, lossDay: t.lossDay.high, life: t.life.low, om: t.om.high, r: D.discount.high
     })).lcos;
     return { low: Math.min(good, bad), high: Math.max(good, bad) };
   }
@@ -107,7 +114,7 @@
     var f = function (lcos) { return gbp(lcos, 3); };
     var base = M.evaluate(paramsFor(t, s)).lcos;
     var items = [
-      { k: 'Capex', lo: 'low', hi: 'high', pl: function (v) { return { capex: v }; }, vl: t.capex.low, vh: t.capex.high, fmt: function (v) { return gbp(v, 0) + '/kWh'; } },
+      { k: 'Capex', lo: 'low', hi: 'high', pl: function (v) { return { capex: v }; }, vl: capexRange(t, s).low, vh: capexRange(t, s).high, fmt: function (v) { return gbp(v, 0) + '/kWh'; } },
       { k: 'Efficiency', lo: 'high', hi: 'low', pl: function (v) { return { eta: v }; }, vl: t.eta.high, vh: t.eta.low, fmt: function (v) { return fmt(v * 100, 0) + '%'; } },
       { k: 'Standing loss', lo: 'low', hi: 'high', pl: function (v) { return { lossDay: v }; }, vl: t.lossDay.low, vh: t.lossDay.high, fmt: function (v) { return fmt(v * 100, 2) + '%/day'; } },
       { k: 'Lifetime', lo: 'high', hi: 'low', pl: function (v) { return { life: v }; }, vl: t.life.high, vh: t.life.low, fmt: function (v) { return fmt(v, 0) + ' yr'; } },
@@ -139,7 +146,7 @@
     var body = D.techs.map(function (t) {
       return '<tr><td class="tech-name">' + t.name + '</td>' +
         '<td class="num">' + gbp(t.capex.low, 2) + ' – ' + gbp(t.capex.high, 2) + '</td>' +
-        '<td>' + t.capexNote + '</td>' +
+        '<td>' + t.capexNote + (t.capexLargeNote ? ' ' + t.capexLargeNote : '') + '</td>' +
         '<td class="num">' + fmt(t.eta.low * 100, 0) + ' / ' + fmt(t.eta.central * 100, 0) + ' / ' + fmt(t.eta.high * 100, 0) + '%</td>' +
         '<td class="num">' + fmt(t.lossDay.central * 100, 2) + '</td>' +
         '<td class="num">' + fmt(t.life.central, 0) + '</td>' +
@@ -155,7 +162,7 @@
       notes.push('At ' + fmt(s.days, 0) + ' days of storage, a hot water tank keeps only ' + fmt(Math.pow(1 - D.techs[0].lossDay.central, s.days) * 100, 0) + '% of its energy at the central standing loss.');
     }
     if (s.E > 10000 && techs.some(function (t) { return t.id === 'tank'; })) {
-      notes.push('The tank capex range is the domestic range (£/kWh). At this scale it is likely overstated: the UK source gives £91–114/m³ for large interseasonal stores, which is not converted here.');
+      notes.push('Tank cost above 10 MWh uses the large-store range (£91–114/m³ converted at a 40 K swing, an assumption). Treat it as indicative.');
     }
     if (s.days < 60 && techs.some(function (t) { return t.id === 'btes'; })) {
       notes.push('Borehole storage is normally seasonal; daily cycling is shown for comparison only.');

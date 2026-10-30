@@ -6,6 +6,10 @@
   'use strict';
 
   var RESTATE = 1.44;
+  // Water stores 1.163 kWh per m³ per kelvin (cp 4.186 kJ/kgK x 1000 kg/m³ / 3600). Temperature swing is an assumption (40 K).
+  var WATER_KWH_PER_M3_K = 4.186 * 1000 / 3600;
+  var DT_ASSUMED = 40;
+  var PER_KWH = WATER_KWH_PER_M3_K * DT_ASSUMED;
   var UK_DECC = 'DECC/DELTA-EE, Evidence Gathering: Thermal Energy Storage (BEIS, 2016)';
   var UK_DESNZ = 'DESNZ, Exploring the take-up and usage of thermal energy storage in heat networks (RAF062/2324, May 2025)';
   var ASSUMED = 'Assumption: no UK source found.';
@@ -15,6 +19,10 @@
       id: 'tank', name: 'Hot water tank',
       capex: { low: 25 * RESTATE, central: 67 * RESTATE, high: 180 * RESTATE },
       capexNote: 'Domestic range 25–180 £/kWh (' + UK_DECC + ', Table 4); central is the geometric mean of that range (67 £/kWh, 2015).',
+      // Large interseasonal tanks: UK source gives 91–114 £/m³ (Table 10, 2015). Converted to £/kWh with a 40 K swing (assumption).
+      capexLarge: { low: 91 * RESTATE / PER_KWH, central: 102.5 * RESTATE / PER_KWH, high: 114 * RESTATE / PER_KWH },
+      capexLargeAbove: 10000,
+      capexLargeNote: 'Above 10 MWh: 91–114 £/m³ (' + UK_DECC + ', Table 10, 2015), converted at 46.5 kWh/m³ (1.163 kWh/m³K x 40 K swing, assumed). The source gives two volume ranges for these prices and no temperature swing, so this conversion is an assumption.',
       eta: { low: 0.5, central: 0.7, high: 0.9 },
       etaNote: '50–90% (' + UK_DECC + ', Tables 2 and 10); central is the midpoint, an assumption.',
       lossDay: { low: 0.0014, central: 0.002, high: 0.0024 },

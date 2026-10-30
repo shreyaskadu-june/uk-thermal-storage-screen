@@ -28,6 +28,7 @@ Live page (once GitHub Pages is enabled): https://shreyaskadu-june.github.io/uk-
 ## Checks
 
 - Domestic 10 kWh tank, central values, daily cycling: £0.268 per kWh delivered (hand calculation in `tests/regression.js`).
+- Large-store tank conversion: 102.5 £/m³ (2015) × 1.44 ÷ 46.5 kWh/m³ = £3.17/kWh central, checked in `tests/regression.js`.
 - Seasonal 180-day storage: a tank keeps about 70% of its energy at the central standing loss (0.2%/day); borehole keeps all of it because its recovery factor already includes seasonal losses.
 - Overall efficiency = conversion efficiency × share retained, checked by the regression tests.
 
@@ -36,7 +37,7 @@ Live page (once GitHub Pages is enabled): https://shreyaskadu-june.github.io/uk-
 - Capital cost: the largest driver for all technologies. The UK ranges come from 2016 evidence with no price year, restated to 2026 £ with one factor (×1.44). Real uncertainty is wider than shown.
 - Borehole capital: the UK source gives only a lower bound (0.30 £/kWh). The central (2×) and high (4×) values are assumptions.
 - Standing loss, lifetime and O&M for tanks, PTES, BTES and PCM: no UK value found for most; labelled as assumptions. The Danish tank loss (0.2%/day) is used only as a labelled reference.
-- Tank capex: the domestic range applied at district scale is likely overstated. The UK source gives £91–114/m³ for large interseasonal stores, which is not converted yet. The page shows a warning above 10 MWh.
+- Tank capex: above 10 MWh the page uses the UK large-store price (£91–114/m³, 2015) converted to £/kWh with an assumed 40 K temperature swing (2.82–3.53 £/kWh in 2026 money). The 40 K swing is an assumption and the source's volume ranges conflict, so treat large-tank costs as indicative.
 - Scale: the UK source states that borehole stores are viable above about 20,000 m³; the page notes this without converting it to a kWh threshold.
 - Input energy cost is the electricity price (16.8p/kWh). Heat-pump charging, gas or network heat would change the results.
 
@@ -47,6 +48,7 @@ Live page (once GitHub Pages is enabled): https://shreyaskadu-june.github.io/uk-
 | Water tank capex | 25–180 £/kWh (2015 money), central 67 | DECC/DELTA-EE, *Evidence Gathering: Thermal Energy Storage* (BEIS, 2016), Table 4 and Table 10 | Sourced (price year assumed 2015) |
 | Water tank efficiency | 50–90%, central 70% | Same, Tables 2 and 10 | Sourced range; central is an assumption |
 | Water tank standing loss | 0.14–0.24%/day, central 0.2% | Danish Energy Agency, Technology Data: Energy Storage, large tanks (reference only) | Assumption informed by a non-UK source |
+| Tank capex, above 10 MWh | 91–114 £/m³ (2015) → 2.82–3.53 £/kWh (2026) | DECC/DELTA-EE, Table 10 (large interseasonal tanks). Converted with 46.5 kWh/m³ (1.163 kWh/m³K × 40 K swing); the 40 K swing is an assumption, and the source gives conflicting volume ranges | Sourced price; conversion is an assumption |
 | PTES capex | 0.30–0.80 £/kWh (2015 money) | DECC/DELTA-EE, Table 4 | Sourced |
 | PTES efficiency | 60–80%, central 65% | DESNZ (May 2025), operational inefficiencies (60–70% pilots); DECC Table 2 (up to 80%) | Sourced range |
 | PTES life | 15–25 years, central 20 | DESNZ (May 2025): 20 years without lid replacement unproven | Range is an assumption |

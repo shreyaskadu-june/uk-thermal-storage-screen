@@ -46,6 +46,12 @@ const b = M.evaluate({
 });
 check('BTES retained after 180 days (no standing loss)', b.retained, 1, 1e-12);
 
+// 4b. Large-store tank capex: 102.5 £/m³ (2015) x 1.44 / (1.163 kWh/m³K x 40 K) = 3.173 £/kWh
+const large = M.evaluate({ E: 100000, cycles: 1, days: 0, price: D.electricityPrice, r: D.discount.central,
+  capex: tank.capexLarge.central, eta: tank.eta.central, lossDay: 0, life: tank.life.central, om: tank.om.central });
+check('large tank central capex £/kWh', tank.capexLarge.central, 3.1731, 0.0005);
+check('large tank capex £ at 100 MWh', large.capex, 317310, 50);
+
 // 5. Restatement: 2015 values restated by 1.44
 check('restatement factor', D.restate, 1.44, 1e-12);
 check('PTES low capex restated £/kWh', D.techs[1].capex.low, 0.432, 1e-9);
